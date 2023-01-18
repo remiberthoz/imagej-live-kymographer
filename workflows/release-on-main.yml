@@ -1,0 +1,38 @@
+name: Release on main tags
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  build_release:
+    runs-on: ubuntu-latest
+    env:
+      IJ_DOWNLOAD_URL: https://downloads.imagej.net/fiji/latest/fiji-linux64.tar.gz
+      WIKI_USER: remiberthoz
+      UPDATE_PASS: ${{ secrets._UPDATE_PASS }}
+      UPDATE_SITE: Live Kymographer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build PlugIn with Maven
+        run: mvn -B package
+      - name: Release to GitHub
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/*[^sources].jar
+          draft: yes
+          fail_on_unmatched_files: yes
+      - name: Install ImageJ/Fiji
+        run: |
+          curl --silent ${IJ_DOWNLOAD_URL} | tar --extract --gzip
+          ./Fiji.app/ImageJ-linux64 --headless --update edit-update-site ${UPDATE_SITE} https://sites.imagej.net/${UPDATE_SITE}/ "webdav:${WIKI_USER}:${UPDATE_PASS}" .
+      - name: Install PlugIn in ImageJ/Fiji (with Maven)
+        run: mvn -B install -Dscijava.app.directory=./Fiji.app -Ddelete.other.versions=true -Dscijava.ignoreDependencies=true
+      - name: Release to ImageJ update site
+        run: |
+          ./Fiji.app/ImageJ-linux64 --headless --update upload-complete-site --force ${UPDATE_SITE}
