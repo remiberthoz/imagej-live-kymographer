@@ -13,7 +13,7 @@ jobs:
       IJ_DOWNLOAD_URL: https://downloads.imagej.net/fiji/latest/fiji-linux64.tar.gz
       WIKI_USER: remiberthoz
       UPDATE_PASS: ${{ secrets._UPDATE_PASS }}
-      UPDATE_SITE: Live Kymographer
+      UPDATE_SITE: Live-Kymographer
     steps:
       - name: Checkout
         uses: actions/checkout@v2

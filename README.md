@@ -45,7 +45,7 @@ You can add this Plugin to your ImageJ/Fiji installation either by configuring a
 
 - As stated in the [official ImageJ documentation](https://imagej.net/update-sites/following), you can navigate in ImageJ's menu to `Help > Update...`.
 - Then click on the `Manage update sites` button.
-- In the list that opens, find the entry named *Live Kymographer* and tick the checkbox.
+- In the list that opens, find the entry named *Live-Kymographer* and tick the checkbox.
 - Fiji will now display the changes it has to perform to install the plugin. If the list is very long, I would recommend reading [this page](https://imagej.net/update-sites/following#choose-and-download-plugins) on ImageJ's wiki. Otherwise, simply click on `Apply changes`
 - Restart ImageJ, and you're done.
 
