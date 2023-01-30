@@ -26,14 +26,20 @@ can import the ROI later. In addition, kymographs pixels are calibrated from
 your original data. Pixel width will correspond to spatial scale, while pixel
 height will correspond to frame interval.
 
+## Known bugs and missing features:
 
-## Missing features:
-
+### Missing features:
 - [ ] **Removal of ROIs** from the table is not supported yet. A possible way to
   implement this features is described by the author of TrackMate [on the
   image.sc forum](https://forum.image.sc/t/add-listener-to-resultstable/814/2).
+- [ ] RGB input is not supported.
+- [ ] When saving a kymograph annotation the temporal coordinates are saved,
+  but the spatial ones are not.
+
+### Bugs:
 - [ ] Wide ROIs extending outside the image will have incorrect pixel values.
-- [ ] RGB input time-lapses raise an ImageJ error.
+- [ ] Polyline ROIs cannot be saved to the results table.
+- [ ] RGB input throws an error instead of a warning message.
 
 Contributions are welcome!
 
