@@ -14,10 +14,10 @@ import java.util.*;
  * Inspired from "Dynamic_Profiler" by Wayne Rasband and Michael Schmid.
  */
 
-// MouseListener, MouseMotionListener, KeyListener: to detect changes to the selection of an ImagePlus
+// RoiListener: to detect changes to the selection of an ImagePlus
 // ImageListener: listens to changes (updateAndDraw) and closing of an image
 // Runnable: for background thread
-public class Live_Kymographer implements PlugIn, MouseListener, MouseMotionListener, KeyListener, ImageListener, Runnable {
+public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Runnable {
 
     private static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
@@ -330,20 +330,12 @@ public class Live_Kymographer implements PlugIn, MouseListener, MouseMotionListe
     }
 
     private void createListeners(ImagePlus image, ImagePlus kymograph) {
-        ImageWindow win = image.getWindow();
-        ImageCanvas canvas = win.getCanvas();
-        canvas.addMouseListener(this);
-        canvas.addMouseMotionListener(this);
-        canvas.addKeyListener(this);
+        Roi.addRoiListener(this);
         ImagePlus.addImageListener(this);
     }
 
     private void removeListeners(ImagePlus image, ImagePlus kymograph) {
-        ImageWindow win = image.getWindow();
-        ImageCanvas canvas = win.getCanvas();
-        canvas.removeMouseListener(this);
-        canvas.removeMouseMotionListener(this);
-        canvas.removeKeyListener(this);
+        Roi.removeRoiListener(this);
         ImagePlus.removeImageListener(this);
     }
 
@@ -360,20 +352,9 @@ public class Live_Kymographer implements PlugIn, MouseListener, MouseMotionListe
 
     // These listeners are activated if the selection is changed in the
     // corresponding ImagePlus
-    public synchronized void mousePressed(MouseEvent e) {
-        triggerKymographUpdate();
-    }
-
-    public synchronized void mouseDragged(MouseEvent e) {
-        triggerKymographUpdate();
-    }
-
-    public synchronized void mouseClicked(MouseEvent e) {
-        triggerKymographUpdate();
-    }
-
-    public synchronized void keyPressed(KeyEvent e) {
-        triggerKymographUpdate();
+    public synchronized void roiModified(ImagePlus image, int id) {
+        if (image == sImage)
+            triggerKymographUpdate(true);
     }
 
     /** This listener is activated if an image content is changed (by imp.updateAndDraw) */
