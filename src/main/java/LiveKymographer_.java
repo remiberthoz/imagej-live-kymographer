@@ -17,7 +17,7 @@ import java.util.*;
 // RoiListener: to detect changes to the selection of an ImagePlus
 // ImageListener: listens to changes (updateAndDraw) and closing of an image
 // Runnable: for background thread
-public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Runnable {
+public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Runnable {
 
     private static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
