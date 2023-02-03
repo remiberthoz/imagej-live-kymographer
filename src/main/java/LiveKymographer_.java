@@ -325,19 +325,21 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     // These listeners are activated if the selection is changed in the
     // corresponding ImagePlus
     public synchronized void roiModified(ImagePlus image, int id) {
-        if (image == sImage)
-            triggerKymographUpdate(true);
+        if (image == sKymograph)
+            return;
+        triggerKymographUpdate(true);
     }
 
     /** This listener is activated if an image content is changed (by imp.updateAndDraw) */
     public synchronized void imageUpdated(ImagePlus image) {
-        if (image == sImage)
-            triggerKymographUpdate(true);
+        if (image == sKymograph)
+            return;
+        triggerKymographUpdate(true);
     }
 
     /** This listener is activated if an image is closed */
     public synchronized void imageClosed(ImagePlus imp) {
-        if (imp == sImage || imp == sKymograph)
+        if (imp == sKymograph)
             sDialog.dispose();
     }
 
