@@ -19,12 +19,14 @@ import java.util.*;
 // Runnable: for background thread
 public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Runnable {
 
-    private static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
+    protected static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
-    private ImagePlus sImage;
-    private CompositeImage sKymograph;
-    private ResultsTable sResultsTable;
-    private NonBlockingGenericDialog sDialog;
+    protected static LiveKymographerConfiguration sConfig = new LiveKymographerConfiguration();
+    private LiveKymographerDialog sDialog;
+
+    protected ImagePlus sImage;
+    protected CompositeImage sKymograph;
+    protected ResultsTable sResultsTable;
 
     private Thread bgThread;  // Thread for plotting (in the background)
 
@@ -50,39 +52,10 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
 
         createListeners(sImage, sKymograph);
 
-        while (true) {
-            sDialog = new NonBlockingGenericDialog("Live Kymographer");
-            sDialog.addButton("Save current line", new AddROIActionListener());
-            sDialog.addButton("Remove overlays created by this plugin", new RemoveOverlayListener());
-            sDialog.addFileField("Load a file (append to current table)", "");
-            sDialog.addCheckbox("Generate kymographs when loading the file", false);
-            sDialog.setOKLabel("Load file");
-            sDialog.setCancelLabel("Close");
-            positionDialogWindow(sImage.getWindow(), sKymograph.getWindow(), sDialog);
-            sDialog.showDialog();
-            if (!sDialog.wasOKed())
-                break;
-
-            String filePath = sDialog.getNextString();
-            boolean drawLoadedKymographs = sDialog.getNextBoolean();
-            ResultsTable rt = ResultsTable.open2(filePath);
-
-            String[] labels = rt.getColumnAsStrings("Label");
-            for (int row = 0; row < labels.length; row++) {
-                int x1 = (int) rt.getValue("x1", row);
-                int x2 = (int) rt.getValue("x2", row);
-                int y1 = (int) rt.getValue("y1", row);
-                int y2 = (int) rt.getValue("y2", row);
-                int t1 = (int) rt.getValue("t1", row);
-                int t2 = (int) rt.getValue("t2", row);
-                int w = (int) rt.getValue("w", row);
-                addKymographLineToTable(sResultsTable, labels[row], x1, x2, y1, y2, t1, t2, w);
-                drawKymographLineOnImage(sImage, x1, x2, y1, y2, t1, t2, w);
-                if (drawLoadedKymographs)
-                    generateFinalKymograph(sImage, x1, x2, y1, y2, t1, t2, w);
-                sResultsTable.show("Results from Live Kymographer");
-            }
-        }
+        sDialog = new LiveKymographerDialog(sConfig, this);
+        sDialog.addDialogListener(new LiveKymographerDialogListener(sConfig, this));
+        positionDialogWindow(sImage.getWindow(), sKymograph.getWindow(), sDialog);
+        sDialog.showDialog();
 
         removeListeners(sImage, sKymograph);
         sKymograph.getWindow().close();
@@ -371,58 +344,6 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
 
     class RemoveLastActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-        }
-    }
-
-    class RemoveOverlayListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            Overlay overlay = sImage.getOverlay();
-            if (overlay != null)
-                overlay.remove(LIVE_KYMOGRAPHER_ROI);
-            sImage.updateAndDraw();
-        }
-    }
-
-    class AddROIActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-
-            Roi imageRoi = sImage.getRoi();
-            Roi kymographRoi = sKymograph.getRoi();
-            if (kymographRoi == null || imageRoi == null)
-                return;
-            if (kymographRoi.getType() != Roi.LINE || imageRoi.getType() != Roi.LINE)
-                return;
-
-            Line kymographLine = (Line) kymographRoi;
-            Line imageLine = (Line) imageRoi;
-            int x1 = Math.max(Math.min(imageLine.x1, sImage.getWidth()), 0);
-            int x2 = Math.max(Math.min(imageLine.x2, sImage.getWidth()), 0);
-            int y1 = Math.max(Math.min(imageLine.y1, sImage.getHeight()), 0);
-            int y2 = Math.max(Math.min(imageLine.y2, sImage.getHeight()), 0);
-            int ta = Math.max(Math.min(kymographLine.y1, sKymograph.getHeight()), 0);
-            int tb = Math.max(Math.min(kymographLine.y2, sKymograph.getHeight()), 0);
-            int t1 = (int) (Math.min(ta, tb) * (double) sImage.getNFrames() / sKymograph.getHeight());
-            int t2 = (int) (Math.max(ta, tb) * (double) sImage.getNFrames() / sKymograph.getHeight());
-            int la = Math.max(Math.min(kymographLine.x1, sKymograph.getWidth()), 0);
-            int lb = Math.max(Math.min(kymographLine.x2, sKymograph.getWidth()), 0);
-            int l1 = Math.min(la, lb);
-            int l2 = Math.max(la, lb);
-            int w = imageLine.getWidth();
-
-            int Lx = imageLine.x2 - imageLine.x1;
-            int Ly = imageLine.y2 - imageLine.y1;
-            double Ux = Lx / Math.sqrt(Lx*Lx + Ly*Ly);
-            double Uy = Ly / Math.sqrt(Lx*Lx + Ly*Ly);
-
-            int newx1 = (int) Math.round(x1 + Ux * (double) l1);
-            int newy1 = (int) Math.round(y1 + Uy * (double) l1);
-            int newx2 = (int) Math.round(x1 + Ux * (double) l2);
-            int newy2 = (int) Math.round(y1 + Uy * (double) l2);
-
-            addKymographLineToTable(sResultsTable, sImage.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
-            drawKymographLineOnImage(sImage, newx1, newx2, newy1, newy2, t1, t2, w);
-            sResultsTable.show("Results from Live Kymographer");
-            generateFinalKymograph(sImage, newx1, newx2, newy1, newy2, t1, t2, w);
         }
     }
 
