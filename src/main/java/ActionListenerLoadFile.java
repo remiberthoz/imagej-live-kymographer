@@ -1,3 +1,6 @@
+import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
 import ij.measure.ResultsTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,9 +27,14 @@ class ActionListenerLoadFile implements ActionListener {
             int t2 = (int) rt.getValue("t2", row);
             int w = (int) rt.getValue("w", row);
             LiveKymographer_.addKymographLineToTable(plugin.sResultsTable, labels[row], x1, x2, y1, y2, t1, t2, w);
-            LiveKymographer_.drawKymographLineOnImage(plugin.sImage, x1, x2, y1, y2, t1, t2, w);
+            ImagePlus image = WindowManager.getImage(labels[row]);
+            if (image == null) {
+                IJ.log("No image with title \"+ labels[row] +\" found: skipping");
+                continue;
+            }
+            LiveKymographer_.drawKymographLineOnImage(image, x1, x2, y1, y2, t1, t2, w);
             if (LiveKymographer_.sConfig.generateWhenSaving)
-                LiveKymographer_.generateFinalKymograph(plugin.sImage, x1, x2, y1, y2, t1, t2, w);
+                LiveKymographer_.generateFinalKymograph(image, x1, x2, y1, y2, t1, t2, w);
             plugin.sResultsTable.show("Results from Live Kymographer");
         }
     }

@@ -24,7 +24,7 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     protected static LiveKymographerConfiguration sConfig = new LiveKymographerConfiguration();
     private LiveKymographerDialog sDialog;
 
-    protected ImagePlus sImage;
+    protected ImagePlus sLastImageSynchronized;
     protected CompositeImage sKymograph;
     protected ResultsTable sResultsTable;
 
@@ -33,17 +33,14 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     /** Called at plugin startup */
     public void run(String arg) {
 
-        sImage = WindowManager.getCurrentImage();
-        if (sImage == null) {
+        ImagePlus image = WindowManager.getCurrentImage();
+        if (image == null) {
             IJ.noImage();
             return;
         }
-        if (sImage.getNFrames() <= 1) {
-            IJ.error("Live Kymographer", "This plugin works on stacks with multiple frames (see your stack dimensions in 'Image > Properties...')");
-            return;
-        }
 
-        sKymograph = newKymographComposite(sImage, "Live kymographer preview", true);
+        sKymograph = newKymographComposite(image, "Live kymographer preview", true);
+        WindowManager.setCurrentWindow(image.getWindow());
         sResultsTable = new ResultsTable(0);
 
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
@@ -54,7 +51,7 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
 
         sDialog = new LiveKymographerDialog(sConfig, this);
         sDialog.addDialogListener(new LiveKymographerDialogListener(sConfig, this));
-        positionDialogWindow(sImage.getWindow(), sKymograph.getWindow(), sDialog);
+        positionDialogWindow(image.getWindow(), sKymograph.getWindow(), sDialog);
         sDialog.showDialog();
 
         removeListeners();
@@ -312,16 +309,16 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     }
 
     /** Can be called by listeners to trigger a kymograph update */
-    public void triggerKymographUpdate(boolean restoreSelectoin) {
-        if ((getPolyineSelection(sImage) == null) && restoreSelectoin)
-            IJ.run(sImage, "Restore Selection", "");
-        synchronized (this) {
+    public void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
+        if ((getPolyineSelection(image) == null) && restoreSelectoin)
+            IJ.run(image, "Restore Selection", "");
+        synchronized(this) {
             notify();
         }
     }
 
-    public void triggerKymographUpdate() {
-        triggerKymographUpdate(false);
+    public void triggerKymographUpdate(ImagePlus image) {
+        triggerKymographUpdate(image, false);
     }
 
     // These listeners are activated if the selection is changed in the
@@ -329,14 +326,14 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     public void roiModified(ImagePlus image, int id) {
         if (image == null || image == sKymograph)
             return;
-        triggerKymographUpdate(true);
+        triggerKymographUpdate(image, true);
     }
 
     /** This listener is activated if an image content is changed (by imp.updateAndDraw) */
     public void imageUpdated(ImagePlus image) {
         if (image == sKymograph)
             return;
-        triggerKymographUpdate(true);
+        triggerKymographUpdate(image, true);
     }
 
     /** This listener is activated if an image is closed */
@@ -415,8 +412,12 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     /** The background thread for plotting */
     public void run() {
         while (true) {
-            PolygonRoi selection = getPolyineSelection(sImage);
-            syncKymographTo(sImage, selection, sKymograph);
+            ImagePlus image = WindowManager.getCurrentImage();
+            if (image != sKymograph) {
+                PolygonRoi selection = getPolyineSelection(image);
+                syncKymographTo(image, selection, sKymograph);
+                sLastImageSynchronized = image;
+            }
             synchronized (this) {
                 try {
                     wait();
