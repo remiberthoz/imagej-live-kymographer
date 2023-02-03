@@ -343,11 +343,6 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
             sDialog.dispose();
     }
 
-    class RemoveLastActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-        }
-    }
-
     /** Unused listeners concering actions in the corresponding ImagePlus */
     public void mouseReleased(MouseEvent e) {
     }
