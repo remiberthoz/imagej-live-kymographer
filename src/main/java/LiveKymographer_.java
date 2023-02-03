@@ -43,7 +43,7 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
             return;
         }
 
-        sKymograph = newKymographComposite(image, "Live kymographer preview", true);
+        sKymograph = newKymographComposite(sImage, "Live kymographer preview", true);
         sResultsTable = new ResultsTable(0);
 
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
