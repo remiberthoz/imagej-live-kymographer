@@ -144,9 +144,9 @@ public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Run
         PolygonRoi line = new PolygonRoi(new float[] {x1, x2}, new float[] {y1, y2}, Roi.POLYLINE);
         syncKymographTo(image, line, kymograph);
 
-        Overlay overlay = new Overlay();
-        overlay.add(new Roi(0, t1, kymograph.getWidth()-1, t2-t1));
-        kymograph.setOverlay(overlay);
+        ImageStack kymographStack = kymograph.getStack();
+        ImageStack croppedStack = kymographStack.crop(0, t1, 0, kymograph.getWidth(), t2-t1, 1);
+        kymograph.setStack(croppedStack);
 
         Calibration imageCal = image.getCalibration();
         Calibration kymographCal = kymograph.getCalibration();
@@ -231,15 +231,15 @@ public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Run
         int L = (int) line.getRawLength();
         int Lx = line.x2 - line.x1;
         int Ly = line.y2 - line.y1;
-        int Ux = (int) Math.round(-Ly / Math.sqrt(Lx*Lx + Ly*Ly));
-        int Uy = (int) Math.round(Lx / Math.sqrt(Lx*Lx + Ly*Ly));
+        double Ux = -Ly / Math.sqrt(Lx*Lx + Ly*Ly);
+        double Uy = Lx / Math.sqrt(Lx*Lx + Ly*Ly);
 
         float[] pixels = new float[L];
         for (int w = -W/2; w <= W/2; w++) {
-            int x1 = Math.min(Math.max(line.x1 + w*Ux, 0), ip.getWidth()-1);
-            int x2 = Math.min(Math.max(line.x2 + w*Ux, 0), ip.getWidth()-1);
-            int y1 = Math.min(Math.max(line.y1 + w*Uy, 0), ip.getHeight()-1);
-            int y2 = Math.min(Math.max(line.y2 + w*Uy, 0), ip.getHeight()-1);
+            int x1 = (int) Math.min(Math.max(line.x1 + w*Ux, 0), ip.getWidth()-1);
+            int x2 = (int) Math.min(Math.max(line.x2 + w*Ux, 0), ip.getWidth()-1);
+            int y1 = (int) Math.min(Math.max(line.y1 + w*Uy, 0), ip.getHeight()-1);
+            int y2 = (int) Math.min(Math.max(line.y2 + w*Uy, 0), ip.getHeight()-1);
             double[] profile = ip.getLine(x1, y1, x2, y2);
             for (int l = 0; l < Math.min(L, profile.length); l++) {
                 if (w == -W / 2)
@@ -403,12 +403,26 @@ public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Run
             int tb = Math.max(Math.min(kymographLine.y2, sKymograph.getHeight()), 0);
             int t1 = (int) (Math.min(ta, tb) * (double) sImage.getNFrames() / sKymograph.getHeight());
             int t2 = (int) (Math.max(ta, tb) * (double) sImage.getNFrames() / sKymograph.getHeight());
+            int la = Math.max(Math.min(kymographLine.x1, sKymograph.getWidth()), 0);
+            int lb = Math.max(Math.min(kymographLine.x2, sKymograph.getWidth()), 0);
+            int l1 = Math.min(la, lb);
+            int l2 = Math.max(la, lb);
             int w = imageLine.getWidth();
 
-            addKymographLineToTable(sResultsTable, sImage.getTitle(), x1, x2, y1, y2, t1, t2, w);
-            drawKymographLineOnImage(sImage, x1, x2, y1, y2, t1, t2, w);
+            int Lx = imageLine.x2 - imageLine.x1;
+            int Ly = imageLine.y2 - imageLine.y1;
+            double Ux = Lx / Math.sqrt(Lx*Lx + Ly*Ly);
+            double Uy = Ly / Math.sqrt(Lx*Lx + Ly*Ly);
+
+            int newx1 = (int) Math.round(x1 + Ux * (double) l1);
+            int newy1 = (int) Math.round(y1 + Uy * (double) l1);
+            int newx2 = (int) Math.round(x1 + Ux * (double) l2);
+            int newy2 = (int) Math.round(y1 + Uy * (double) l2);
+
+            addKymographLineToTable(sResultsTable, sImage.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
+            drawKymographLineOnImage(sImage, newx1, newx2, newy1, newy2, t1, t2, w);
             sResultsTable.show("Results from Live Kymographer");
-            generateFinalKymograph(sImage, x1, x2, y1, y2, t1, t2, w);
+            generateFinalKymograph(sImage, newx1, newx2, newy1, newy2, t1, t2, w);
         }
     }
 
