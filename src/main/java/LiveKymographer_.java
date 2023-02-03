@@ -50,14 +50,14 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
         bgThread.start();
 
-        createListeners(sImage, sKymograph);
+        createListeners();
 
         sDialog = new LiveKymographerDialog(sConfig, this);
         sDialog.addDialogListener(new LiveKymographerDialogListener(sConfig, this));
         positionDialogWindow(sImage.getWindow(), sKymograph.getWindow(), sDialog);
         sDialog.showDialog();
 
-        removeListeners(sImage, sKymograph);
+        removeListeners();
         sKymograph.getWindow().close();
         sDialog.dispose();
         bgThread.interrupt();
@@ -301,12 +301,12 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
         return polyline;
     }
 
-    private void createListeners(ImagePlus image, ImagePlus kymograph) {
+    private void createListeners() {
         Roi.addRoiListener(this);
         ImagePlus.addImageListener(this);
     }
 
-    private void removeListeners(ImagePlus image, ImagePlus kymograph) {
+    private void removeListeners() {
         Roi.removeRoiListener(this);
         ImagePlus.removeImageListener(this);
     }
