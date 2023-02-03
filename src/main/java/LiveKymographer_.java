@@ -312,33 +312,35 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     }
 
     /** Can be called by listeners to trigger a kymograph update */
-    public synchronized void triggerKymographUpdate(boolean restoreSelectoin) {
+    public void triggerKymographUpdate(boolean restoreSelectoin) {
         if ((getPolyineSelection(sImage) == null) && restoreSelectoin)
             IJ.run(sImage, "Restore Selection", "");
-        notify();
+        synchronized (this) {
+            notify();
+        }
     }
 
-    public synchronized void triggerKymographUpdate() {
+    public void triggerKymographUpdate() {
         triggerKymographUpdate(false);
     }
 
     // These listeners are activated if the selection is changed in the
     // corresponding ImagePlus
-    public synchronized void roiModified(ImagePlus image, int id) {
-        if (image == sKymograph)
+    public void roiModified(ImagePlus image, int id) {
+        if (image == null || image == sKymograph)
             return;
         triggerKymographUpdate(true);
     }
 
     /** This listener is activated if an image content is changed (by imp.updateAndDraw) */
-    public synchronized void imageUpdated(ImagePlus image) {
+    public void imageUpdated(ImagePlus image) {
         if (image == sKymograph)
             return;
         triggerKymographUpdate(true);
     }
 
     /** This listener is activated if an image is closed */
-    public synchronized void imageClosed(ImagePlus imp) {
+    public void imageClosed(ImagePlus imp) {
         if (imp == sKymograph)
             sDialog.dispose();
     }
