@@ -43,7 +43,7 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
             return;
         }
 
-        sKymograph = newKymographComposite(sImage, "Live kymograph of", true);
+        sKymograph = newKymographComposite(image, "Live kymographer preview", true);
         sResultsTable = new ResultsTable(0);
 
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
@@ -111,8 +111,8 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
 
     static void generateFinalKymograph(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
 
-        String titlePrefix = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of";
-        CompositeImage kymograph = newKymographComposite(image, titlePrefix, false);
+        String title = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of" + image.getShortTitle();
+        CompositeImage kymograph = newKymographComposite(image, title, false);
 
         PolygonRoi line = new PolygonRoi(new float[] {x1, x2}, new float[] {y1, y2}, Roi.POLYLINE);
         syncKymographTo(image, line, kymograph);
@@ -224,8 +224,7 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
     }
 
     /** Create an ImagePlus (CompositeImage) for the kymograph, and display it on screen */
-    static CompositeImage newKymographComposite(ImagePlus image, String titlePrefix, boolean position) {
-        String title = titlePrefix + " " + image.getShortTitle();
+    static CompositeImage newKymographComposite(ImagePlus image, String title, boolean position) {
         int L = 512;  // Arbitrary length, will be dynamic when ImagePlus.setStack() is called
         int T = image.getNFrames();
         int C = image.getNChannels();
