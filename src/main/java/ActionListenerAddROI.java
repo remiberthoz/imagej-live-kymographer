@@ -6,15 +6,9 @@ import java.awt.event.ActionListener;
 
 class ActionListenerAddROI implements ActionListener {
 
-    LiveKymographer_ plugin;
-
-    ActionListenerAddROI(LiveKymographer_ plugin) {
-        this.plugin = plugin;
-    }
-
     public void actionPerformed(ActionEvent e) {
-        Roi imageRoi = plugin.sLastImageSynchronized.getRoi();
-        Roi kymographRoi = plugin.sKymograph.getRoi();
+        Roi imageRoi = LiveKymographer_.lastImageSynchronized.getRoi();
+        Roi kymographRoi = LiveKymographer_.kymographImage.getRoi();
         if (kymographRoi == null || imageRoi == null)
             return;
         if (kymographRoi.getType() != Roi.LINE || imageRoi.getType() != Roi.LINE)
@@ -22,16 +16,16 @@ class ActionListenerAddROI implements ActionListener {
 
         Line kymographLine = (Line) kymographRoi;
         Line imageLine = (Line) imageRoi;
-        int x1 = Math.max(Math.min(imageLine.x1, plugin.sLastImageSynchronized.getWidth()), 0);
-        int x2 = Math.max(Math.min(imageLine.x2, plugin.sLastImageSynchronized.getWidth()), 0);
-        int y1 = Math.max(Math.min(imageLine.y1, plugin.sLastImageSynchronized.getHeight()), 0);
-        int y2 = Math.max(Math.min(imageLine.y2, plugin.sLastImageSynchronized.getHeight()), 0);
-        int ta = Math.max(Math.min(kymographLine.y1, plugin.sKymograph.getHeight()), 0);
-        int tb = Math.max(Math.min(kymographLine.y2, plugin.sKymograph.getHeight()), 0);
-        int t1 = (int) (Math.min(ta, tb) * (double) plugin.sLastImageSynchronized.getNFrames() / plugin.sKymograph.getHeight());
-        int t2 = (int) (Math.max(ta, tb) * (double) plugin.sLastImageSynchronized.getNFrames() / plugin.sKymograph.getHeight());
-        int la = Math.max(Math.min(kymographLine.x1, plugin.sKymograph.getWidth()), 0);
-        int lb = Math.max(Math.min(kymographLine.x2, plugin.sKymograph.getWidth()), 0);
+        int x1 = Math.max(Math.min(imageLine.x1, LiveKymographer_.lastImageSynchronized.getWidth()), 0);
+        int x2 = Math.max(Math.min(imageLine.x2, LiveKymographer_.lastImageSynchronized.getWidth()), 0);
+        int y1 = Math.max(Math.min(imageLine.y1, LiveKymographer_.lastImageSynchronized.getHeight()), 0);
+        int y2 = Math.max(Math.min(imageLine.y2, LiveKymographer_.lastImageSynchronized.getHeight()), 0);
+        int ta = Math.max(Math.min(kymographLine.y1, LiveKymographer_.kymographImage.getHeight()), 0);
+        int tb = Math.max(Math.min(kymographLine.y2, LiveKymographer_.kymographImage.getHeight()), 0);
+        int t1 = (int) (Math.min(ta, tb) * (double) LiveKymographer_.lastImageSynchronized.getNFrames() / LiveKymographer_.kymographImage.getHeight());
+        int t2 = (int) (Math.max(ta, tb) * (double) LiveKymographer_.lastImageSynchronized.getNFrames() / LiveKymographer_.kymographImage.getHeight());
+        int la = Math.max(Math.min(kymographLine.x1, LiveKymographer_.kymographImage.getWidth()), 0);
+        int lb = Math.max(Math.min(kymographLine.x2, LiveKymographer_.kymographImage.getWidth()), 0);
         int l1 = Math.min(la, lb);
         int l2 = Math.max(la, lb);
         int w = imageLine.getWidth();
@@ -46,10 +40,10 @@ class ActionListenerAddROI implements ActionListener {
         int newx2 = (int) Math.round(x1 + Ux * (double) l2);
         int newy2 = (int) Math.round(y1 + Uy * (double) l2);
 
-        LiveKymographer_.addKymographLineToTable(plugin.sResultsTable, plugin.sLastImageSynchronized.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
-        LiveKymographer_.drawKymographLineOnImage(plugin.sLastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
-        plugin.sResultsTable.show("Results from Live Kymographer");
-        if (LiveKymographer_.sConfig.generateWhenSaving)
-            LiveKymographer_.generateFinalKymograph(plugin.sLastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
+        LiveKymographer_.addKymographLineToTable(LiveKymographer_.kymographsCoordinatesTable, LiveKymographer_.lastImageSynchronized.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
+        LiveKymographer_.drawKymographLineOnImage(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
+        LiveKymographer_.kymographsCoordinatesTable.show("Results from Live Kymographer");
+        if (LiveKymographer_.configuration.generateWhenSaving)
+            LiveKymographer_.generateFinalKymograph(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
     }
 }

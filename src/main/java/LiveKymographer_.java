@@ -16,42 +16,61 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
     protected static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
-    protected static LiveKymographerConfiguration sConfig = new LiveKymographerConfiguration();
-    private LiveKymographerDialog sDialog;
+    private static LiveKymographer_ runningInstance = null;
 
-    protected ImagePlus sLastImageSynchronized;
-    protected LiveKymographerComposite sKymograph;
-    protected ResultsTable sResultsTable;
+    protected static LiveKymographerConfiguration configuration = new LiveKymographerConfiguration();
+    private static LiveKymographerDialog controlDialog;
+
+    protected static ImagePlus lastImageSynchronized;
+    protected static LiveKymographerComposite kymographImage;
+    protected static ResultsTable kymographsCoordinatesTable;
 
     private Thread bgThread;  // Thread for plotting (in the background)
 
+    private static LiveKymographer_ getInstance() {
+        if (runningInstance == null)
+            runningInstance = new LiveKymographer_();
+        return runningInstance;
+    }
+
+    private static boolean isRunning() {
+        return runningInstance != null;
+    }
+
     /** Called at plugin startup */
     public void run(String arg) {
+        if (isRunning()) {
+            IJ.error("Live Kymographer", "Live Kymographer is already running!");
+            return;
+        }
+
         ImagePlus image = WindowManager.getCurrentImage();
         if (image == null) {
             IJ.noImage();
             return;
         }
 
-        sDialog = new LiveKymographerDialog(sConfig, this);
+        runningInstance = getInstance();
+
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
-        sKymograph = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
-        sResultsTable = new ResultsTable(0);
-        LiveKymographerListener listener = new LiveKymographerListener(this, sDialog, sConfig);
+        controlDialog = new LiveKymographerDialog(configuration);
+        kymographImage = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
+        kymographsCoordinatesTable = new ResultsTable(0);
 
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
         bgThread.start();
+        LiveKymographerListener listener = new LiveKymographerListener(controlDialog, configuration);
         listener.createListeners();
 
         WindowManager.setCurrentWindow(image.getWindow());
         IJ.wait(50);  // Not sure why, but waiting is required otherwise the dialog does not show
-        sKymograph.show();
-        sDialog.showDialog();
+        kymographImage.show();
+        controlDialog.showDialog();
         // Blocks until the dialog is closed
 
         listener.removeListeners();
-        sKymograph.getWindow().close();
-        sDialog.dispose();
+        kymographImage.getWindow().close();
+        controlDialog.dispose();
         bgThread.interrupt();
     }
 
@@ -282,15 +301,15 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     }
 
     /** Can be called by listeners to trigger a kymograph update */
-    public void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
+    public static void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
         if ((getPolyineSelection(image) == null) && restoreSelectoin)
             IJ.run(image, "Restore Selection", "");
-        synchronized(this) {
-            notify();
+        synchronized(runningInstance) {
+            runningInstance.notify();
         }
     }
 
-    public void triggerKymographUpdate(ImagePlus image) {
+    public static void triggerKymographUpdate(ImagePlus image) {
         triggerKymographUpdate(image, false);
     }
 
@@ -310,14 +329,14 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     public void run() {
         while (true) {
             ImagePlus image = WindowManager.getCurrentImage();
-            if (image != sKymograph) {
+            if (image != kymographImage) {
                 PolygonRoi selection = getPolyineSelection(image);
-                syncKymographTo(image, selection, sKymograph);
-                sLastImageSynchronized = image;
+                syncKymographTo(image, selection, kymographImage);
+                lastImageSynchronized = image;
             }
-            synchronized (this) {
+            synchronized (runningInstance) {
                 try {
-                    wait();
+                    runningInstance.wait();
                 } catch (InterruptedException e) {
                     return;
                 }

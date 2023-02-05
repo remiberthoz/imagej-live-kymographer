@@ -7,14 +7,8 @@ import java.awt.event.ActionListener;
 
 class ActionListenerLoadFile implements ActionListener {
 
-    LiveKymographer_ plugin;
-
-    ActionListenerLoadFile(LiveKymographer_ plugin) {
-        this.plugin = plugin;
-    }
-
     public void actionPerformed(ActionEvent e) {
-        String filePath = LiveKymographer_.sConfig.loadFilePath;
+        String filePath = LiveKymographer_.configuration.loadFilePath;
         ResultsTable rt = ResultsTable.open2(filePath);
 
         String[] labels = rt.getColumnAsStrings("Label");
@@ -26,16 +20,16 @@ class ActionListenerLoadFile implements ActionListener {
             int t1 = (int) rt.getValue("t1", row);
             int t2 = (int) rt.getValue("t2", row);
             int w = (int) rt.getValue("w", row);
-            LiveKymographer_.addKymographLineToTable(plugin.sResultsTable, labels[row], x1, x2, y1, y2, t1, t2, w);
+            LiveKymographer_.addKymographLineToTable(LiveKymographer_.kymographsCoordinatesTable, labels[row], x1, x2, y1, y2, t1, t2, w);
             ImagePlus image = WindowManager.getImage(labels[row]);
             if (image == null) {
                 IJ.log("No image with title \"+ labels[row] +\" found: skipping");
                 continue;
             }
             LiveKymographer_.drawKymographLineOnImage(image, x1, x2, y1, y2, t1, t2, w);
-            if (LiveKymographer_.sConfig.generateWhenSaving)
+            if (LiveKymographer_.configuration.generateWhenSaving)
                 LiveKymographer_.generateFinalKymograph(image, x1, x2, y1, y2, t1, t2, w);
-            plugin.sResultsTable.show("Results from Live Kymographer");
+            LiveKymographer_.kymographsCoordinatesTable.show("Results from Live Kymographer");
         }
     }
 }

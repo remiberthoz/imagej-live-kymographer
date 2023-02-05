@@ -6,12 +6,6 @@ import java.awt.event.ActionListener;
 
 class ActionListenerRemoveOverlay implements ActionListener {
 
-    LiveKymographer_ plugin;
-
-    ActionListenerRemoveOverlay(LiveKymographer_ plugin) {
-        this.plugin = plugin;
-    }
-
     public void actionPerformed(ActionEvent e) {
         ImagePlus image = WindowManager.getCurrentImage();
         Overlay overlay = image.getOverlay();

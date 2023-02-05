@@ -11,12 +11,10 @@ import java.awt.AWTEvent;
 // DialogListener: listens to changes to the dialog control box
 class LiveKymographerListener implements RoiListener, ImageListener, DialogListener {
 
-    LiveKymographer_ plugin;
     LiveKymographerConfiguration config;
     GenericDialog dialog;
 
-    LiveKymographerListener(LiveKymographer_ plugin, LiveKymographerDialog dialog, LiveKymographerConfiguration config) {
-        this.plugin = plugin;
+    LiveKymographerListener(LiveKymographerDialog dialog, LiveKymographerConfiguration config) {
         this.config = config;
         this.dialog = dialog;
     }
@@ -43,22 +41,22 @@ class LiveKymographerListener implements RoiListener, ImageListener, DialogListe
 
     @Override
     public void imageClosed(ImagePlus image) {
-        if (image == plugin.sKymograph)
+        if (image == LiveKymographer_.kymographImage)
             dialog.dispose();
     }
 
     @Override
     public void imageUpdated(ImagePlus image) {
-        if (image == plugin.sKymograph)
+        if (image == LiveKymographer_.kymographImage)
             return;
-        plugin.triggerKymographUpdate(image, true);
+            LiveKymographer_.triggerKymographUpdate(image, true);
     }
 
     @Override
     public void roiModified(ImagePlus image, int id) {
-        if (image == null || image == plugin.sKymograph)
+        if (image == null || image == LiveKymographer_.kymographImage)
             return;
-        plugin.triggerKymographUpdate(image, true);
+            LiveKymographer_.triggerKymographUpdate(image, true);
     }
 
 }
