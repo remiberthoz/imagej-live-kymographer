@@ -26,12 +26,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     private static LiveKymographerDialog controlDialog;
     private static LiveKymographerListener listener;
 
-    private static LiveKymographer_ getInstance() {
-        if (runningInstance == null)
-            runningInstance = new LiveKymographer_();
-        return runningInstance;
-    }
-
     private static boolean isRunning() {
         return runningInstance != null;
     }
@@ -50,7 +44,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
             return;
         }
 
-        runningInstance = getInstance();
+        runningInstance = this;
         kymographImage = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
         kymographsCoordinatesTable = new ResultsTable(0);
 
