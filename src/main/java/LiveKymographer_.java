@@ -3,10 +3,7 @@ import ij.plugin.PlugIn;
 import ij.process.*;
 import ij.measure.*;
 import ij.gui.*;
-import ij.util.Tools;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 
 /**
  * Live_Kymographer by Rémi Berthoz
@@ -30,7 +27,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
     /** Called at plugin startup */
     public void run(String arg) {
-
         ImagePlus image = WindowManager.getCurrentImage();
         if (image == null) {
             IJ.noImage();

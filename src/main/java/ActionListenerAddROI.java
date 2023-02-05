@@ -1,6 +1,5 @@
 import ij.gui.Line;
 import ij.gui.Roi;
-import ij.IJ;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
