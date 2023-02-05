@@ -127,6 +127,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
         PolygonRoi line = new PolygonRoi(new float[] {x1, x2}, new float[] {y1, y2}, Roi.POLYLINE);
         syncKymographTo(image, line, kymograph);
+        kymograph.setOverlay(null);  // Remove the time indicator added by syncKymographTo()
 
         ImageStack kymographStack = kymograph.getStack();
         ImageStack croppedStack = kymographStack.crop(0, t1, 0, kymograph.getWidth(), t2-t1, 1);
