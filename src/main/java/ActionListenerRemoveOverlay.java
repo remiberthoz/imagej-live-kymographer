@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 
 class ActionListenerRemoveOverlay implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         ImagePlus image = WindowManager.getCurrentImage();
         Overlay overlay = image.getOverlay();

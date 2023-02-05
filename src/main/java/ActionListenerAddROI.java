@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 
 class ActionListenerAddROI implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         Roi imageRoi = LiveKymographer_.lastImageSynchronized.getRoi();
         Roi kymographRoi = LiveKymographer_.kymographImage.getRoi();

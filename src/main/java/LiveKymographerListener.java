@@ -19,6 +19,7 @@ class LiveKymographerListener implements RoiListener, ImageListener, DialogListe
         this.dialog = dialog;
     }
 
+    @Override
     public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
         config.generateWhenSaving = gd.getNextBoolean();
         config.loadFilePath = gd.getNextString();

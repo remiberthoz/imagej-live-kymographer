@@ -38,6 +38,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     }
 
     /** Called at plugin startup */
+    @Override
     public void run(String arg) {
         if (isRunning()) {
             IJ.error("Live Kymographer", "Live Kymographer is already running!");
@@ -279,6 +280,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     }
 
     /** The background thread for plotting */
+    @Override
     public void run() {
         while (true) {
             ImagePlus image = WindowManager.getCurrentImage();

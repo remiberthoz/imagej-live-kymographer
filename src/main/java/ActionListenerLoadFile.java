@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 
 class ActionListenerLoadFile implements ActionListener {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         String filePath = LiveKymographer_.configuration.loadFilePath;
         ResultsTable rt = ResultsTable.open2(filePath);
