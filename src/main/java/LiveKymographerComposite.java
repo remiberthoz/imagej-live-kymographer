@@ -36,13 +36,13 @@ public class LiveKymographerComposite extends CompositeImage {
 
     protected void syncTimeIndicator(ImagePlus image) {
         float indicatorTemporalPosition = (image.getFrame() - 0.5f) / image.getNFrames();
-        int indicatorVPixelPosition = Math.round(indicatorTemporalPosition * this.height);
+        int indicatorVPixelPosition = (int) Math.floor(indicatorTemporalPosition * this.height);
 
         Line line = new Line(0, indicatorVPixelPosition, this.width, indicatorVPixelPosition);
         Color strokeColor = Roi.getColor();
-        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 128);
+        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 255);
         line.setStrokeColor(strokeColor);
-        line.setStrokeWidth(1);
+        line.setStrokeWidth(0);
 
         Overlay kymographOverlay = new Overlay();
         kymographOverlay.addElement(line);
