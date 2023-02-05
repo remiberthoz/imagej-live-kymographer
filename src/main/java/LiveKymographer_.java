@@ -234,50 +234,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         return pixels;
     }
 
-    /** Place the dialog window next to the image window and below the kymograph window */
-    static void positionDialogWindow(ImageWindow image, ImageWindow kymograph, GenericDialog dialog) {
-        int kymographWidth = kymograph.getSize().width;
-        int kymographHeight = kymograph.getSize().height;
-        int imageWidth = image.getSize().width;
-        if (kymographWidth == 0 || imageWidth == 0)
-            return;
-
-        Point imageLoc = image.getLocation();
-
-        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int x = imageLoc.x + imageWidth + 10;
-        if (x + kymographWidth > screenWidth)
-            x = screenWidth - kymographWidth;
-        int y = imageLoc.y + kymographHeight + 10;
-
-        dialog.setLocation(x, y);
-        image.requestFocus();
-    }
-
-    /** Place the kymograph window next to the image window (the boolean flag adds a vertical offset) */
-    static void positionKymographWindow(ImageWindow image, ImageWindow kymograph, boolean position) {
-        // TODO: Replace boolean with typed flag
-        int kymographWidth = kymograph.getSize().width;
-        int imageWidth = image.getSize().width;
-        if (kymographWidth == 0 || imageWidth == 0)
-            return;
-
-        Point imageLoc = image.getLocation();
-
-        int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
-        int x = imageLoc.x + imageWidth + 10;
-        if (x + kymographWidth > screenWidth)
-            x = screenWidth - kymographWidth;
-
-        if (position) {
-            kymograph.setLocation(x, imageLoc.y);
-        } else {
-            kymograph.setLocation(x, imageLoc.y + 10);
-        }
-
-        image.requestFocus();
-    }
-
     /** Get the current line selection (or null if there is none) */
     static PolygonRoi getPolyineSelection(ImagePlus image) {
         Roi roi = image.getRoi();
