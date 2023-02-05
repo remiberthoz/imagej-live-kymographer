@@ -20,7 +20,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     private LiveKymographerDialog sDialog;
 
     protected ImagePlus sLastImageSynchronized;
-    protected CompositeImage sKymograph;
+    protected LiveKymographerComposite sKymograph;
     protected ResultsTable sResultsTable;
 
     private Thread bgThread;  // Thread for plotting (in the background)
@@ -33,24 +33,23 @@ public class LiveKymographer_ implements PlugIn, Runnable {
             return;
         }
 
-        sKymograph = newKymographComposite(image, "Live kymographer preview", true);
-        WindowManager.setCurrentWindow(image.getWindow());
-        sResultsTable = new ResultsTable(0);
-
+        sDialog = new LiveKymographerDialog(sConfig, this);
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
+        sKymograph = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
+        sResultsTable = new ResultsTable(0);
+        LiveKymographerListener listener = new LiveKymographerListener(this, sDialog, sConfig);
+
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
         bgThread.start();
-
-        sDialog = new LiveKymographerDialog(sConfig, this);
-        positionDialogWindow(image.getWindow(), sKymograph.getWindow(), sDialog);
-
-        LiveKymographerListener listener = new LiveKymographerListener(this, sDialog, sConfig);
         listener.createListeners();
 
+        WindowManager.setCurrentWindow(image.getWindow());
+        IJ.wait(50);  // Not sure why, but waiting is required otherwise the dialog does not show
+        sKymograph.show();
         sDialog.showDialog();
+        // Blocks until the dialog is closed
 
         listener.removeListeners();
-
         sKymograph.getWindow().close();
         sDialog.dispose();
         bgThread.interrupt();
@@ -105,7 +104,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     static void generateFinalKymograph(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
 
         String title = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of" + image.getShortTitle();
-        CompositeImage kymograph = newKymographComposite(image, title, false);
+        LiveKymographerComposite kymograph = new LiveKymographerComposite(title, image.getNFrames());
 
         PolygonRoi line = new PolygonRoi(new float[] {x1, x2}, new float[] {y1, y2}, Roi.POLYLINE);
         syncKymographTo(image, line, kymograph);
@@ -216,18 +215,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         return pixels;
     }
 
-    /** Create an ImagePlus (CompositeImage) for the kymograph, and display it on screen */
-    static CompositeImage newKymographComposite(ImagePlus image, String title, boolean position) {
-        int L = 512;  // Arbitrary length, will be dynamic when ImagePlus.setStack() is called
-        int T = image.getNFrames();
-        int C = image.getNChannels();
-        CompositeImage kymograph = new CompositeImage(IJ.createHyperStack(title, L, T, C, 1, 1, 32));
-        kymograph.show();
-        IJ.wait(50);
-        positionKymographWindow(image.getWindow(), kymograph.getWindow(), position);
-        return kymograph;
-    }
-
     /** Place the dialog window next to the image window and below the kymograph window */
     static void positionDialogWindow(ImageWindow image, ImageWindow kymograph, GenericDialog dialog) {
         int kymographWidth = kymograph.getSize().width;
@@ -307,49 +294,16 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         triggerKymographUpdate(image, false);
     }
 
-    static public void syncKymographTo(ImagePlus image, PolygonRoi selection, CompositeImage kymograph) {
-
+    static public void syncKymographTo(ImagePlus image, PolygonRoi selection, LiveKymographerComposite kymograph) {
         if (selection == null)
             return;
-
         ImageStack data = makeKymographData(image, selection, kymograph.getHeight());
         if (data == null)
             return;
         kymograph.setStack(data);
-
-        kymograph.setPosition(image.getChannel(), 1, 1);
-        kymograph.setMode(image.getDisplayMode());
-        kymograph.updateAndDraw();  // Required here, such that IJ.COMPOSITE is synchronized on image and kymograph for the check below
-
-        ImageProcessor ip = image.getProcessor();
-        ImageProcessor kp = kymograph.getProcessor();
-        kymograph.setLuts(image.getLuts());
-        kp.setMinAndMax(ip.getMin(), ip.getMax());
-
-        if (image.getDisplayMode() == IJ.COMPOSITE) {
-            for (int c = 0; c < image.getNChannels(); c++) {
-                ip = ((CompositeImage) image).getProcessor(c+1);
-                kp = kymograph.getProcessor(c+1);
-                kp.setLut(ip.getLut());
-                kp.setMinAndMax(ip.getMin(), ip.getMax());
-            }
-        }
-
+        kymograph.syncChannelDisplay(image);
+        kymograph.syncTimeIndicator(image);
         kymograph.updateAndDraw();
-
-        Overlay kymographOverlay = new Overlay();
-
-        int frame = (int) ((double) (image.getFrame() - 0.5) / image.getNFrames() * kymograph.getHeight());
-        Line line = new Line(0, frame, kymograph.getWidth(), frame);
-
-        line.setStrokeWidth(Math.max(1, kymograph.getHeight() / image.getNFrames()));
-
-        Color strokeColor = Roi.getColor();
-        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 128);
-        line.setStrokeColor(strokeColor);
-
-        kymographOverlay.addElement(line);
-        kymograph.setOverlay(kymographOverlay);
     }
 
     /** The background thread for plotting */
