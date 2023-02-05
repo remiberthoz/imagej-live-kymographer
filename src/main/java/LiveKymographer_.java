@@ -265,10 +265,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         }
     }
 
-    public static void triggerKymographUpdate(ImagePlus image) {
-        triggerKymographUpdate(image, false);
-    }
-
     static public void syncKymographTo(ImagePlus image, PolygonRoi selection, LiveKymographerComposite kymograph) {
         if (selection == null)
             return;
