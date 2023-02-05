@@ -14,10 +14,8 @@ import java.util.*;
  * Inspired from "Dynamic_Profiler" by Wayne Rasband and Michael Schmid.
  */
 
-// RoiListener: to detect changes to the selection of an ImagePlus
-// ImageListener: listens to changes (updateAndDraw) and closing of an image
 // Runnable: for background thread
-public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Runnable {
+public class LiveKymographer_ implements PlugIn, Runnable {
 
     protected static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
@@ -47,14 +45,16 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
         bgThread.start();
 
-        createListeners();
-
         sDialog = new LiveKymographerDialog(sConfig, this);
-        sDialog.addDialogListener(new LiveKymographerDialogListener(sConfig, this));
         positionDialogWindow(image.getWindow(), sKymograph.getWindow(), sDialog);
+
+        LiveKymographerListener listener = new LiveKymographerListener(this, sDialog, sConfig);
+        listener.createListeners();
+
         sDialog.showDialog();
 
-        removeListeners();
+        listener.removeListeners();
+
         sKymograph.getWindow().close();
         sDialog.dispose();
         bgThread.interrupt();
@@ -298,16 +298,6 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
         return polyline;
     }
 
-    private void createListeners() {
-        Roi.addRoiListener(this);
-        ImagePlus.addImageListener(this);
-    }
-
-    private void removeListeners() {
-        Roi.removeRoiListener(this);
-        ImagePlus.removeImageListener(this);
-    }
-
     /** Can be called by listeners to trigger a kymograph update */
     public void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
         if ((getPolyineSelection(image) == null) && restoreSelectoin)
@@ -319,49 +309,6 @@ public class LiveKymographer_ implements PlugIn, RoiListener, ImageListener, Run
 
     public void triggerKymographUpdate(ImagePlus image) {
         triggerKymographUpdate(image, false);
-    }
-
-    // These listeners are activated if the selection is changed in the
-    // corresponding ImagePlus
-    public void roiModified(ImagePlus image, int id) {
-        if (image == null || image == sKymograph)
-            return;
-        triggerKymographUpdate(image, true);
-    }
-
-    /** This listener is activated if an image content is changed (by imp.updateAndDraw) */
-    public void imageUpdated(ImagePlus image) {
-        if (image == sKymograph)
-            return;
-        triggerKymographUpdate(image, true);
-    }
-
-    /** This listener is activated if an image is closed */
-    public void imageClosed(ImagePlus imp) {
-        if (imp == sKymograph)
-            sDialog.dispose();
-    }
-
-    /** Unused listeners concering actions in the corresponding ImagePlus */
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseExited(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    public void mouseMoved(MouseEvent e) {
-    }
-
-    public void keyTyped(KeyEvent e) {
-    }
-
-    public void keyReleased(KeyEvent e) {
-    }
-
-    public void imageOpened(ImagePlus imp) {
     }
 
     static public void syncKymographTo(ImagePlus image, PolygonRoi selection, CompositeImage kymograph) {
