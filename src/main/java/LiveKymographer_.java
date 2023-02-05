@@ -214,7 +214,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     public void run() {
         while (true) {
             ImagePlus image = WindowManager.getCurrentImage();
-            if (image != kymographImage) {
+            if (image != kymographImage && image.getNFrames() > 1) {
                 LiveKymographerKymographSelection selection = LiveKymographerKymographSelection.getFrom(image);
                 syncKymographTo(image, selection, kymographImage);
                 lastImageSynchronized = image;
