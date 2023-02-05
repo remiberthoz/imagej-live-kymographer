@@ -43,7 +43,7 @@ class LiveKymographerListener implements RoiListener, ImageListener, DialogListe
     @Override
     public void imageClosed(ImagePlus image) {
         if (image == LiveKymographer_.kymographImage)
-            dialog.dispose();
+            LiveKymographer_.quit();
     }
 
     @Override

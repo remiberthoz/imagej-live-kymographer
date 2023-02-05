@@ -17,15 +17,14 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     protected static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
     private static LiveKymographer_ runningInstance = null;
-
     protected static LiveKymographerConfiguration configuration = new LiveKymographerConfiguration();
-    private static LiveKymographerDialog controlDialog;
-
     protected static ImagePlus lastImageSynchronized;
     protected static LiveKymographerComposite kymographImage;
     protected static ResultsTable kymographsCoordinatesTable;
 
-    private Thread bgThread;  // Thread for plotting (in the background)
+    private static Thread bgThread;
+    private static LiveKymographerDialog controlDialog;
+    private static LiveKymographerListener listener;
 
     private static LiveKymographer_ getInstance() {
         if (runningInstance == null)
@@ -52,23 +51,29 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         }
 
         runningInstance = getInstance();
-
-        bgThread = new Thread(this, "Live Kymographer Computation Thread");
-        controlDialog = new LiveKymographerDialog(configuration);
         kymographImage = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
         kymographsCoordinatesTable = new ResultsTable(0);
 
+        bgThread = new Thread(this, "Live Kymographer Computation Thread");
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
         bgThread.start();
-        LiveKymographerListener listener = new LiveKymographerListener(controlDialog, configuration);
+
+        controlDialog = new LiveKymographerDialog(configuration);
+
+        listener = new LiveKymographerListener(controlDialog, configuration);
         listener.createListeners();
 
+        kymographImage.show();
         WindowManager.setCurrentWindow(image.getWindow());
         IJ.wait(50);  // Not sure why, but waiting is required otherwise the dialog does not show
-        kymographImage.show();
         controlDialog.showDialog();
         // Blocks until the dialog is closed
 
+        quit();
+    }
+
+    protected static void quit() {
+        runningInstance = null;
         listener.removeListeners();
         kymographImage.getWindow().close();
         controlDialog.dispose();
