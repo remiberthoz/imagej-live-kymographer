@@ -78,34 +78,45 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         Overlay overlay = image.getOverlay();
         if (overlay == null)
             overlay = new Overlay();
-
-        PointRoi point = new PointRoi(x1, y1);
-        Line line = new Line(x1, y1, x2, y2);
-
-        line.setStrokeWidth(w);
-        Color strokeColor = Toolbar.getForegroundColor();
-        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 128);
-        line.setStrokeColor(strokeColor);
-        point.setStrokeColor(strokeColor);
-
+        Line line = makeKymographLine(x1, x2, y1, y1, w);
+        PointRoi point = makeKymographPoint(x1, y1);
         for (int t = t1; t <= t2; t++) {
             for (int c = 0; c <= image.getNChannels(); c++) {
                 for (int z = 0; z <= image.getNSlices(); z++) {
                     Roi lineRoi = (Roi) line.clone();
                     Roi pointRoi = (Roi) point.clone();
-                    if (image.isHyperStack()) {
-                        lineRoi.setPosition(c+1, z+1, t+1);
-                        pointRoi.setPosition(c+1, z+1, t+1);
-                    } else {
-                        lineRoi.setPosition(image.getStackIndex(c+1, z+1, t+1));
-                        pointRoi.setPosition(image.getStackIndex(c+1, z+1, t+1));
-                    }
+                    positionRoiOnImagePlus(image, lineRoi, c, z, t);
+                    positionRoiOnImagePlus(image, pointRoi, c, z, t);
                     overlay.add(lineRoi, LIVE_KYMOGRAPHER_ROI);
                     overlay.add(pointRoi, LIVE_KYMOGRAPHER_ROI);
                 }
             }
         }
         image.setOverlay(overlay);
+    }
+
+    static PointRoi makeKymographPoint(int x, int y) {
+        PointRoi point = new PointRoi(x, y);
+        Color strokeColor = Toolbar.getForegroundColor();
+        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 128);
+        point.setStrokeColor(strokeColor);
+        return point;
+    }
+
+    static Line makeKymographLine(int x1, int x2, int y1, int y2, int w) {
+        Line line = new Line(x1, y1, x2, y2);
+        line.setStrokeWidth(w);
+        Color strokeColor = Toolbar.getForegroundColor();
+        strokeColor = new Color(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), 128);
+        line.setStrokeColor(strokeColor);
+        return line;
+    }
+
+    static void positionRoiOnImagePlus(ImagePlus image, Roi roi, int c, int z, int t) {
+        if (image.isHyperStack())
+            roi.setPosition(c+1, z+1, t+1);
+        else
+            roi.setPosition(image.getStackIndex(c+1, z+1, t+1));
     }
 
     static void generateFinalKymograph(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
