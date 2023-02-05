@@ -49,14 +49,14 @@ class LiveKymographerListener implements RoiListener, ImageListener, DialogListe
     public void imageUpdated(ImagePlus image) {
         if (image == LiveKymographer_.kymographImage)
             return;
-            LiveKymographer_.triggerKymographUpdate(image, true);
+        LiveKymographer_.triggerKymographUpdate(image, true);
     }
 
     @Override
     public void roiModified(ImagePlus image, int id) {
         if (image == null || image == LiveKymographer_.kymographImage)
             return;
-            LiveKymographer_.triggerKymographUpdate(image, true);
+        LiveKymographer_.triggerKymographUpdate(image, true);
     }
 
 }
