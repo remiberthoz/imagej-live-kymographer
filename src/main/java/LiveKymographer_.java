@@ -20,7 +20,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     protected static LiveKymographerConfiguration configuration = new LiveKymographerConfiguration();
     protected static ImagePlus lastImageSynchronized;
     protected static LiveKymographerComposite kymographImage;
-    protected static ResultsTable kymographsCoordinatesTable;
+    protected static LiveKymographerResultsTable kymographsCoordinatesTable;
 
     private static Thread bgThread;
     private static LiveKymographerDialog controlDialog;
@@ -46,7 +46,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
         runningInstance = this;
         kymographImage = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
-        kymographsCoordinatesTable = new ResultsTable(0);
+        kymographsCoordinatesTable = new LiveKymographerResultsTable("Live Kymographer Coordinates Table");
 
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
         bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
@@ -72,18 +72,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         kymographImage.getWindow().close();
         controlDialog.dispose();
         bgThread.interrupt();
-    }
-
-    static void addKymographLineToTable(ResultsTable table, String label, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
-        table.addRow();
-        table.addLabel(label);
-        table.addValue("x1", x1);
-        table.addValue("x2", x2);
-        table.addValue("y1", y1);
-        table.addValue("y2", y2);
-        table.addValue("t1", t1);
-        table.addValue("t2", t2);
-        table.addValue("w", w);
     }
 
     static void drawKymographLineOnImage(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {

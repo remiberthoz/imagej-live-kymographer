@@ -41,9 +41,9 @@ class ActionListenerAddROI implements ActionListener {
         int newx2 = (int) Math.round(x1 + Ux * (double) l2);
         int newy2 = (int) Math.round(y1 + Uy * (double) l2);
 
-        LiveKymographer_.addKymographLineToTable(LiveKymographer_.kymographsCoordinatesTable, LiveKymographer_.lastImageSynchronized.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
+        LiveKymographer_.kymographsCoordinatesTable.addLine(LiveKymographer_.lastImageSynchronized.getTitle(), newx1, newx2, newy1, newy2, t1, t2, w);
         LiveKymographer_.drawKymographLineOnImage(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
-        LiveKymographer_.kymographsCoordinatesTable.show("Results from Live Kymographer");
+        LiveKymographer_.kymographsCoordinatesTable.show();
         if (LiveKymographer_.configuration.generateWhenSaving)
             LiveKymographer_.generateFinalKymograph(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, w);
     }
