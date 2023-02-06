@@ -131,13 +131,6 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         ImageStack croppedStack = kymographStack.crop(0, t1, 0, kymograph.getWidth(), t2-t1, 1);
         kymograph.setStack(croppedStack);
 
-        Calibration imageCal = image.getCalibration();
-        Calibration kymographCal = kymograph.getCalibration();
-        kymographCal.pixelHeight = imageCal.frameInterval;
-        kymographCal.setYUnit(imageCal.getTimeUnit());
-        kymographCal.pixelWidth = imageCal.pixelWidth;
-        kymographCal.setXUnit(imageCal.getXUnit());
-
         kymograph.show();
     }
 
@@ -205,6 +198,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         kymograph.updateAndDraw();
         kymograph.syncChannelDisplay(image);
         kymograph.syncTimeIndicator(image);
+        kymograph.syncCalibration(image);
         kymograph.updateAndDraw();
     }
 

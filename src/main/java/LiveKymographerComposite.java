@@ -4,6 +4,7 @@ import ij.IJ;
 import ij.gui.Line;
 import ij.gui.Overlay;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.process.ImageProcessor;
 import ij.process.LUT;
 
@@ -57,5 +58,14 @@ public class LiveKymographerComposite extends CompositeImage {
         Overlay kymographOverlay = new Overlay();
         kymographOverlay.addElement(line);
         this.setOverlay(kymographOverlay);
+    }
+
+    protected void syncCalibration(ImagePlus image) {
+        Calibration imageCal = image.getCalibration();
+        Calibration kymographCal = this.getCalibration();
+        kymographCal.pixelHeight = imageCal.frameInterval * image.getNFrames() / this.getHeight();
+        kymographCal.setYUnit(imageCal.getTimeUnit());
+        kymographCal.pixelWidth = imageCal.pixelWidth;
+        kymographCal.setXUnit(imageCal.getXUnit());
     }
 }
