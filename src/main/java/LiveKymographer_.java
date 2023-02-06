@@ -201,7 +201,8 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         ImageStack data = makeKymographData(image, selection, kymograph.getHeight());
         if (data == null)
             return;
-        kymograph.setStack(data);
+        kymograph.setStack(data, image.getNChannels(), 1, 1);
+        kymograph.updateAndDraw();
         kymograph.syncChannelDisplay(image);
         kymograph.syncTimeIndicator(image);
         kymograph.updateAndDraw();

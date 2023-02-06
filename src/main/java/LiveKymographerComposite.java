@@ -5,6 +5,8 @@ import ij.gui.Line;
 import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
+import ij.process.LUT;
+
 import java.awt.Color;
 
 public class LiveKymographerComposite extends CompositeImage {
@@ -16,7 +18,7 @@ public class LiveKymographerComposite extends CompositeImage {
 
     protected void syncChannelDisplay(ImagePlus image) {
         this.setPosition(image.getChannel(), 1, 1);
-        this.setDisplayMode(image.getDisplayMode());
+        this.setMode(image.getDisplayMode());
         this.updateAndDraw();  // Required here, such that IJ.COMPOSITE is synchronized on image and kymograph for the check below
 
         ImageProcessor ip = image.getProcessor();
@@ -24,11 +26,19 @@ public class LiveKymographerComposite extends CompositeImage {
         this.setLuts(image.getLuts());
         kp.setMinAndMax(ip.getMin(), ip.getMax());
 
-        if (image.getDisplayMode() == IJ.COMPOSITE) {
+        if (image.getDisplayMode() == IJ.COMPOSITE && image.isComposite()) {
+            boolean[] active = ((CompositeImage) image).getActiveChannels();
+            String activeChannels = "";
+            for (boolean ch : active)
+                activeChannels += ch ? "1" : "0";
+            this.setActiveChannels(activeChannels);
             for (int c = 0; c < image.getNChannels(); c++) {
                 ip = ((CompositeImage) image).getProcessor(c+1);
                 kp = this.getProcessor(c+1);
-                kp.setLut(ip.getLut());
+                LUT lut = (LUT) ip.getLut().clone();
+                if (lut == null || kp == null)
+                    continue;
+                kp.setLut(lut);
                 kp.setMinAndMax(ip.getMin(), ip.getMax());
             }
         }
