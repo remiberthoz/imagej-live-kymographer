@@ -121,7 +121,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
     static void generateFinalKymograph(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
 
-        String title = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of" + image.getShortTitle();
+        String title = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of " + image.getShortTitle();
         LiveKymographerComposite kymograph = new LiveKymographerComposite(title, image.getNFrames());
 
         syncKymographTo(image, new LiveKymographerKymographSelection(x1, x2, y1, y2), kymograph);
