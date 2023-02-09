@@ -37,7 +37,6 @@ public class LiveKymographerKymographSelection {
             default:
                 return null;
         }
-
         return new LiveKymographerKymographSelection(polyline);
     }
 
@@ -74,7 +73,6 @@ public class LiveKymographerKymographSelection {
         int Ly = line.y2 - line.y1;
         double Ux = -Ly / Math.sqrt(Lx*Lx + Ly*Ly);
         double Uy = Lx / Math.sqrt(Lx*Lx + Ly*Ly);
-
         float[] pixels = new float[L];
         for (int w = -W/2; w <= W/2; w++) {
             int x1 = (int) Math.min(Math.max(line.x1 + w*Ux, 0), ip.getWidth()-1);

@@ -3,7 +3,6 @@ import ij.gui.Roi;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
 class ActionListenerAddROI implements ActionListener {
 
     @Override

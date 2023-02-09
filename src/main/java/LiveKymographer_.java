@@ -49,7 +49,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         kymographsCoordinatesTable = new LiveKymographerResultsTable("Live Kymographer Coordinates Table");
 
         bgThread = new Thread(this, "Live Kymographer Computation Thread");
-        bgThread.setPriority(Math.max(bgThread.getPriority() - 3, Thread.MIN_PRIORITY));  // Copied from Dynamic_Profiler
+        bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY)); // Copied from Dynamic_Profiler
         bgThread.start();
 
         controlDialog = new LiveKymographerDialog(configuration);
@@ -59,7 +59,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
         kymographImage.show();
         WindowManager.setCurrentWindow(image.getWindow());
-        IJ.wait(50);  // Not sure why, but waiting is required otherwise the dialog does not show
+        IJ.wait(50); // Not sure why, but waiting is required otherwise the dialog does not show
         controlDialog.showDialog();
         // Blocks until the dialog is closed
 
@@ -120,26 +120,20 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     }
 
     static void generateFinalKymograph(ImagePlus image, int x1, int x2, int y1, int y2, int t1, int t2, int w) {
-
         String title = "Kymograph (x1=" + x1 + " x2=" + x2 + " y1=" + y1 + " y2=" + y2 + " t1=" + t1 + " t2=" + t2 + ") of " + image.getShortTitle();
         LiveKymographerComposite kymograph = new LiveKymographerComposite(title, image.getNFrames());
-
         syncKymographTo(image, new LiveKymographerKymographSelection(x1, x2, y1, y2), kymograph);
-        kymograph.setOverlay(null);  // Remove the time indicator added by syncKymographTo()
-
+        kymograph.setOverlay(null); // Remove the time indicator added by syncKymographTo()
         Roi cropRoi = new Roi(1, t1, kymograph.getWidth(), t2-t1);
         kymograph.setRoi(cropRoi);
         kymograph.setStack(kymograph.crop("stack").getStack());
-
         kymograph.show();
     }
 
     static ImageStack makeKymographData(ImagePlus image, LiveKymographerKymographSelection selection, int height) {
-
         int L = (int) selection.getLength();
         if (L <= 1)
             return null;
-
         int T = image.getNFrames();
         int H = (height == 0) ? T : height;
         int C = image.getNChannels();
@@ -155,22 +149,22 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
             for (int h = 0; h < H; h++) {
                 // TODO: Optimize by looping on frame instead of h
-                int frame = h * T / H;
+                int frame = h * T/H;
                 ImageProcessor ip = image.getImageStack().getProcessor(image.getStackIndex(c+1, z, frame+1));
                 float[] floatPixels = selection.getPixels(ip, c);
                 for (int l = 0; l < L; l++) {
                     switch (D) {
                         case 8:
-                            ((byte[]) pixels)[h * L + l] = (byte) Math.round(floatPixels[l]);
+                            ((byte[]) pixels)[h*L + l] = (byte) Math.round(floatPixels[l]);
                             break;
                         case 16:
-                            ((short[]) pixels)[h * L + l] = (short) Math.round(floatPixels[l]);
+                            ((short[]) pixels)[h*L + l] = (short) Math.round(floatPixels[l]);
                             break;
                         case 24:
-                            ((int[]) pixels)[h * L + l] = (int) Math.round(floatPixels[l]);
+                            ((int[]) pixels)[h*L + l] = (int) Math.round(floatPixels[l]);
                             break;
                         case 32:
-                            ((float[]) pixels)[h * L + l] = floatPixels[l];
+                            ((float[]) pixels)[h*L + l] = floatPixels[l];
                             break;
                     }
                 }
@@ -183,7 +177,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     public static void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
         if ((LiveKymographerKymographSelection.getFrom(image) == null) && restoreSelectoin && image == lastImageSynchronized)
             IJ.run(image, "Restore Selection", "");
-        synchronized(runningInstance) {
+        synchronized (runningInstance) {
             runningInstance.notify();
         }
     }
