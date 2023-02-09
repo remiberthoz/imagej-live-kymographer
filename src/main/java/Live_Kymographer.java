@@ -143,10 +143,11 @@ public class Live_Kymographer implements PlugIn, RoiListener, ImageListener, Run
 
         PolygonRoi line = new PolygonRoi(new float[] {x1, x2}, new float[] {y1, y2}, Roi.POLYLINE);
         syncKymographTo(image, line, kymograph);
+        kymograph.setOverlay(null);
 
-        ImageStack kymographStack = kymograph.getStack();
-        ImageStack croppedStack = kymographStack.crop(0, t1, 0, kymograph.getWidth(), t2-t1, 1);
-        kymograph.setStack(croppedStack);
+        Roi cropRoi = new Roi(0, t1, kymograph.getWidth()-1, t2-t1);
+        kymograph.setRoi(cropRoi);
+        kymograph.setStack(kymograph.crop("stack").getStack());
 
         Calibration imageCal = image.getCalibration();
         Calibration kymographCal = kymograph.getCalibration();
