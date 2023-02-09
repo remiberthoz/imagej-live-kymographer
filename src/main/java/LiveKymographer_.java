@@ -29,25 +29,40 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         return runningInstance != null;
     }
 
-    /** Called at plugin startup */
+    /**
+     * This method is called when the plugin is loaded. 'arg', which may be
+     * blank, is the argument specified for this plugin in IJ_Props.txt.
+     */
     @Override
     public void run(String arg) {
         if (isRunning()) {
             IJ.error("Live Kymographer", "Live Kymographer is already running!");
             return;
         }
+        runPlugin(this);
+    }
 
+    /**
+     * This method is called when the Runnable plugin is made into a Thread
+     * and Thread.start() is called.
+     */
+    @Override
+    public void run() {
+        runComputationThread();
+    }
+
+    private static void runPlugin(LiveKymographer_ instance) {
         ImagePlus image = WindowManager.getCurrentImage();
         if (image == null) {
             IJ.noImage();
             return;
         }
 
-        runningInstance = this;
+        runningInstance = instance;
         kymographImage = new LiveKymographerComposite("Live kymographer preview", image.getNFrames());
         kymographsCoordinatesTable = new LiveKymographerResultsTable("Live Kymographer Coordinates Table");
 
-        bgThread = new Thread(this, "Live Kymographer Computation Thread");
+        bgThread = new Thread(instance, "Live Kymographer Computation Thread");
         bgThread.setPriority(Math.max(bgThread.getPriority()-3, Thread.MIN_PRIORITY)); // Copied from Dynamic_Profiler
         bgThread.start();
 
@@ -61,11 +76,30 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         IJ.wait(50); // Not sure why, but waiting is required otherwise the dialog does not show
         controlDialog.showDialog();
         // Blocks until the dialog is closed
-
-        quit();
+        stopPluginAndThread();
     }
 
-    protected static void quit() {
+    private static void runComputationThread() {
+        boolean wasInterrupted = false;
+        while (!wasInterrupted) {
+            ImagePlus image = WindowManager.getCurrentImage();
+            if (image != kymographImage && image.getNFrames() > 1) {
+                LiveKymographerKymographSelection selection = LiveKymographerKymographSelection.getFrom(image);
+                syncKymographTo(image, selection, kymographImage);
+                lastImageSynchronized = image;
+            }
+            synchronized (runningInstance) {
+                try {
+                    runningInstance.wait();
+                } catch (InterruptedException e) {
+                    wasInterrupted = true;
+                    Thread.currentThread().interrupt();
+                }
+            }
+        }
+    }
+
+    protected static void stopPluginAndThread() {
         runningInstance = null;
         listener.removeListeners();
         kymographImage.getWindow().close();
@@ -195,25 +229,5 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         kymograph.syncTimeIndicator(image);
         kymograph.syncCalibration(image);
         kymograph.updateAndDraw();
-    }
-
-    /** The background thread for plotting */
-    @Override
-    public void run() {
-        while (true) {
-            ImagePlus image = WindowManager.getCurrentImage();
-            if (image != kymographImage && image.getNFrames() > 1) {
-                LiveKymographerKymographSelection selection = LiveKymographerKymographSelection.getFrom(image);
-                syncKymographTo(image, selection, kymographImage);
-                lastImageSynchronized = image;
-            }
-            synchronized (runningInstance) {
-                try {
-                    runningInstance.wait();
-                } catch (InterruptedException e) {
-                    return;
-                }
-            }
-        }
     }
 }
