@@ -78,7 +78,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         Overlay overlay = image.getOverlay();
         if (overlay == null)
             overlay = new Overlay();
-        Line line = makeKymographLine(x1, x2, y1, y1, w);
+        Line line = makeKymographLine(x1, x2, y1, y2, w);
         PointRoi point = makeKymographPoint(x1, y1);
         for (int t = t1; t <= t2; t++) {
             for (int c = 0; c <= image.getNChannels(); c++) {
