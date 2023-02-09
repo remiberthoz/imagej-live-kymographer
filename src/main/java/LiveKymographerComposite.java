@@ -27,10 +27,10 @@ public class LiveKymographerComposite extends CompositeImage {
         kp.setMinAndMax(ip.getMin(), ip.getMax());
         if (image.getDisplayMode() == IJ.COMPOSITE && image.isComposite()) {
             boolean[] active = ((CompositeImage) image).getActiveChannels();
-            String activeChannels = "";
+            StringBuilder activeChannels = new StringBuilder();
             for (boolean ch : active)
-                activeChannels += ch ? "1" : "0";
-            this.setActiveChannels(activeChannels);
+                activeChannels.append(ch ? "1" : "0");
+            this.setActiveChannels(activeChannels.toString());
             for (int c = 0; c < image.getNChannels(); c++) {
                 ip = ((CompositeImage) image).getProcessor(c+1);
                 kp = this.getProcessor(c+1);

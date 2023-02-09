@@ -44,7 +44,7 @@ public class LiveKymographerKymographSelection {
         return (int) polyline.getUncalibratedLength();
     }
 
-    public float[] getPixels(ImageProcessor ip, int channel) {
+    public float[] getPixels(ImageProcessor ip) {
         int L = (int) polyline.getUncalibratedLength();
         Polygon polygon = polyline.getPolygon();
         float[] pixels = new float[L];
@@ -65,25 +65,24 @@ public class LiveKymographerKymographSelection {
     private static float[] getPixelsOnLine(ImageProcessor ip, Line line, int width) {
         // NOTE: Since we rely on ImageProcessor.getLine(), we run into
         // trouble when part the line goes outside of the image boundaries.
-        int W = width;
-        if (W % 2 == 0)
-            W = W + 1;
+        if (width % 2 == 0)
+            width = width + 1;
         int L = (int) line.getRawLength();
-        int Lx = line.x2 - line.x1;
-        int Ly = line.y2 - line.y1;
-        double Ux = -Ly / Math.sqrt(Lx*Lx + Ly*Ly);
-        double Uy = Lx / Math.sqrt(Lx*Lx + Ly*Ly);
+        int dx = line.x2 - line.x1;
+        int dy = line.y2 - line.y1;
+        double ux = -dy / Math.sqrt((double) dx*dx + dy*dy);
+        double uy = dx / Math.sqrt((double) dx*dx + dy*dy);
         float[] pixels = new float[L];
-        for (int w = -W/2; w <= W/2; w++) {
-            int x1 = (int) Math.min(Math.max(line.x1 + w*Ux, 0), ip.getWidth()-1);
-            int x2 = (int) Math.min(Math.max(line.x2 + w*Ux, 0), ip.getWidth()-1);
-            int y1 = (int) Math.min(Math.max(line.y1 + w*Uy, 0), ip.getHeight()-1);
-            int y2 = (int) Math.min(Math.max(line.y2 + w*Uy, 0), ip.getHeight()-1);
+        for (int w = -width/2; w <= width/2; w++) {
+            int x1 = (int) Math.min(Math.max(line.x1 + w*ux, 0), ip.getWidth()-1);
+            int x2 = (int) Math.min(Math.max(line.x2 + w*ux, 0), ip.getWidth()-1);
+            int y1 = (int) Math.min(Math.max(line.y1 + w*uy, 0), ip.getHeight()-1);
+            int y2 = (int) Math.min(Math.max(line.y2 + w*uy, 0), ip.getHeight()-1);
             double[] profile = ip.getLine(x1, y1, x2, y2);
             for (int l = 0; l < Math.min(L, profile.length); l++) {
-                if (w == -W / 2)
+                if (w == -width/2)
                     pixels[l] = 0;
-                pixels[l] = pixels[l] + ((float) profile[l]) / W;
+                pixels[l] = pixels[l] + ((float) profile[l]) / width;
             }
         }
         return pixels;

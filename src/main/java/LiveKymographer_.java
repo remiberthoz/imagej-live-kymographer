@@ -1,7 +1,6 @@
 import ij.*;
 import ij.plugin.PlugIn;
 import ij.process.*;
-import ij.measure.*;
 import ij.gui.*;
 import java.awt.*;
 
@@ -14,7 +13,7 @@ import java.awt.*;
 // Runnable: for background thread
 public class LiveKymographer_ implements PlugIn, Runnable {
 
-    protected static String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
+    protected static final String LIVE_KYMOGRAPHER_ROI = "LIVE_KYMOGRAPHER_ROI";
 
     private static LiveKymographer_ runningInstance = null;
     protected static LiveKymographerConfiguration configuration = new LiveKymographerConfiguration();
@@ -131,7 +130,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
     }
 
     static ImageStack makeKymographData(ImagePlus image, LiveKymographerKymographSelection selection, int height) {
-        int L = (int) selection.getLength();
+        int L = selection.getLength();
         if (L <= 1)
             return null;
         int T = image.getNFrames();
@@ -151,7 +150,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
                 // TODO: Optimize by looping on frame instead of h
                 int frame = h * T/H;
                 ImageProcessor ip = image.getImageStack().getProcessor(image.getStackIndex(c+1, z, frame+1));
-                float[] floatPixels = selection.getPixels(ip, c);
+                float[] floatPixels = selection.getPixels(ip);
                 for (int l = 0; l < L; l++) {
                     switch (D) {
                         case 8:
@@ -161,11 +160,13 @@ public class LiveKymographer_ implements PlugIn, Runnable {
                             ((short[]) pixels)[h*L + l] = (short) Math.round(floatPixels[l]);
                             break;
                         case 24:
-                            ((int[]) pixels)[h*L + l] = (int) Math.round(floatPixels[l]);
+                            ((int[]) pixels)[h*L + l] = Math.round(floatPixels[l]);
                             break;
                         case 32:
                             ((float[]) pixels)[h*L + l] = floatPixels[l];
                             break;
+                        default:
+                            throw new IllegalStateException("Unknown image type");
                     }
                 }
             }
@@ -178,11 +179,11 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         if ((LiveKymographerKymographSelection.getFrom(image) == null) && restoreSelectoin && image == lastImageSynchronized)
             IJ.run(image, "Restore Selection", "");
         synchronized (runningInstance) {
-            runningInstance.notify();
+            runningInstance.notifyAll();
         }
     }
 
-    static public void syncKymographTo(ImagePlus image, LiveKymographerKymographSelection selection, LiveKymographerComposite kymograph) {
+    public static void syncKymographTo(ImagePlus image, LiveKymographerKymographSelection selection, LiveKymographerComposite kymograph) {
         if (selection == null)
             return;
         ImageStack data = makeKymographData(image, selection, kymograph.getHeight());
