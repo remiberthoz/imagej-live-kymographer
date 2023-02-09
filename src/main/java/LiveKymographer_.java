@@ -127,9 +127,9 @@ public class LiveKymographer_ implements PlugIn, Runnable {
         syncKymographTo(image, new LiveKymographerKymographSelection(x1, x2, y1, y2), kymograph);
         kymograph.setOverlay(null);  // Remove the time indicator added by syncKymographTo()
 
-        ImageStack kymographStack = kymograph.getStack();
-        ImageStack croppedStack = kymographStack.crop(0, t1, 0, kymograph.getWidth(), t2-t1, 1);
-        kymograph.setStack(croppedStack);
+        Roi cropRoi = new Roi(1, t1, kymograph.getWidth(), t2-t1);
+        kymograph.setRoi(cropRoi);
+        kymograph.setStack(kymograph.crop("stack").getStack());
 
         kymograph.show();
     }
@@ -181,7 +181,7 @@ public class LiveKymographer_ implements PlugIn, Runnable {
 
     /** Can be called by listeners to trigger a kymograph update */
     public static void triggerKymographUpdate(ImagePlus image, boolean restoreSelectoin) {
-        if ((LiveKymographerKymographSelection.getFrom(image) == null) && restoreSelectoin)
+        if ((LiveKymographerKymographSelection.getFrom(image) == null) && restoreSelectoin && image == lastImageSynchronized)
             IJ.run(image, "Restore Selection", "");
         synchronized(runningInstance) {
             runningInstance.notify();
