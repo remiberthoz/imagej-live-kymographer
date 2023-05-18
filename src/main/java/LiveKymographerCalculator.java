@@ -159,5 +159,7 @@ class LiveKymographerCalculator extends Thread {
         kymograph.syncTimeIndicator(image);
         kymograph.syncCalibration(image);
         kymograph.updateAndDraw();
+        if (kymograph.getWindow() == null || !kymograph.getWindow().isShowing())
+            kymograph.show();
     }
 }

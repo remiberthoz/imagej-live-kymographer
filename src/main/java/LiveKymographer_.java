@@ -62,7 +62,6 @@ public class LiveKymographer_ implements PlugIn {
         listener = new LiveKymographerListener(controlDialog, configuration);
         listener.createListeners();
 
-        kymographImage.show();
         WindowManager.setCurrentWindow(image.getWindow());
         IJ.wait(50); // Not sure why, but waiting is required otherwise the dialog does not show
         controlDialog.showDialog();
@@ -75,7 +74,8 @@ public class LiveKymographer_ implements PlugIn {
     protected static void stopPluginAndThread() {
         runningInstance = null;
         listener.removeListeners();
-        kymographImage.getWindow().close();
+        if (kymographImage.getWindow() != null)
+            kymographImage.getWindow().close();
         controlDialog.dispose();
         calculatorThread.interrupt();
     }
