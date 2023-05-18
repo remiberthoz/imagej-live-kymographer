@@ -35,14 +35,15 @@ public class LiveKymographer_ implements PlugIn {
      */
     @Override
     public void run(String arg) {
-        if (isRunning()) {
-            IJ.error("Live Kymographer", "Live Kymographer is already running!");
-            return;
-        }
         runPlugin(this);
     }
 
     private static void runPlugin(LiveKymographer_ instance) {
+        if (isRunning()) {
+            IJ.error("Live Kymographer", "Live Kymographer is already running!");
+            return;
+        }
+
         ImagePlus image = WindowManager.getCurrentImage();
         if (image == null) {
             IJ.noImage();
