@@ -74,7 +74,7 @@
   </ciManagement>
 
   <properties>
-    <main-class>Live_Kymographer</main-class>
+    <main-class>LiveKymographer_</main-class>
     <package-name>fr.remiberthoz.imagej.live_kymographer</package-name>
 		<license.licenseName>GPL v3</license.licenseName>
     <license.projectName>Live Kymographer</license.projectName>
