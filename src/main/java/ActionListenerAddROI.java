@@ -39,9 +39,9 @@ class ActionListenerAddROI implements ActionListener {
         int newy2 = (int) Math.round(y1 + uy*l2);
 
         LiveKymographer_.kymographsCoordinatesTable.addLine(LiveKymographer_.lastImageSynchronized.getTitle(), newx1, newx2, newy1, newy2, t1, t2, width);
-        LiveKymographer_.drawKymographLineOnImage(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, width);
+        LiveKymographerCalculator.drawKymographLineOnImage(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, width);
         LiveKymographer_.kymographsCoordinatesTable.show();
         if (LiveKymographer_.configuration.generateWhenSaving)
-            LiveKymographer_.generateFinalKymograph(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, width);
+            LiveKymographerCalculator.generateFinalKymograph(LiveKymographer_.lastImageSynchronized, newx1, newx2, newy1, newy2, t1, t2, width);
     }
 }
