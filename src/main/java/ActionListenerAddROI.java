@@ -9,8 +9,10 @@ class ActionListenerAddROI implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         Roi imageRoi = LiveKymographer_.lastImageSynchronized.getRoi();
         Roi kymographRoi = LiveKymographer_.kymographImage.getRoi();
-        if (kymographRoi == null || imageRoi == null)
+        if (imageRoi == null)
             return;
+        if (kymographRoi == null)
+            kymographRoi = new Line(0, 0, LiveKymographer_.kymographImage.getWidth(), LiveKymographer_.kymographImage.getHeight());
         if (kymographRoi.getType() != Roi.LINE || imageRoi.getType() != Roi.LINE)
             return;
 
