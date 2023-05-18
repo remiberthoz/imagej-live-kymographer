@@ -42,9 +42,9 @@ public class LiveKymographerResultsTable {
                 IJ.log("No image with title \"+ labels[row] +\" found: skipping");
                 continue;
             }
-            LiveKymographer_.drawKymographLineOnImage(image, x1, x2, y1, y2, t1, t2, w);
+            LiveKymographerCalculator.drawKymographLineOnImage(image, x1, x2, y1, y2, t1, t2, w);
             if (LiveKymographer_.configuration.generateWhenSaving)
-                LiveKymographer_.generateFinalKymograph(image, x1, x2, y1, y2, t1, t2, w);
+                LiveKymographerCalculator.generateFinalKymograph(image, x1, x2, y1, y2, t1, t2, w);
             LiveKymographer_.kymographsCoordinatesTable.show();
         }
     }
